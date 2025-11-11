@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { profileService } from '../../services/profileService';
+import { profileService } from '../../services/ProfileService';
 import { networkingService } from '../../services/networkingService';
 import SlotRequestModal from '../../components/SlotRequestModal';
 import NetworkingPanel from '../../components/NetworkingPanel';
