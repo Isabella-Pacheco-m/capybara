@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { profileService } from '../../services/profileService';
+import { profileService } from '../../services/ProfileService.js';
 
 export default function EventRegister() {
   const { eventCode } = useParams();

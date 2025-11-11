@@ -8,11 +8,22 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-1&h=ltyipk*4%5^44f=l&secw96$n*@$jsaqx_xyaq+zt_3f!&')
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-# Allowed hosts para Vercel
+# Configuración mejorada para ALLOWED_HOSTS
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-ALLOWED_HOSTS.append('.vercel.app')  # Permite subdominios de vercel.app
+
+# Agregar dominios de Vercel si están en producción
+if not DEBUG:
+    ALLOWED_HOSTS.extend([
+        '.vercel.app',  # Permite todos los subdominios de vercel.app
+        '.now.sh',      # Dominio antiguo de Vercel
+    ])
+    
+    # Si tienes un dominio personalizado, agrégalo aquí o en la variable de entorno
+    custom_domain = os.getenv('CUSTOM_DOMAIN', '')
+    if custom_domain:
+        ALLOWED_HOSTS.append(custom_domain)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -34,7 +45,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Para servir archivos estáticos
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -64,21 +74,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-# Base de datos - Usar PostgreSQL en producción o SQLite en desarrollo
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-# Si tienes PostgreSQL configurado (recomendado para producción)
-if os.getenv('DATABASE_URL'):
-    import dj_database_url
-    DATABASES['default'] = dj_database_url.config(
-        default=os.getenv('DATABASE_URL'),
-        conn_max_age=600
-    )
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -92,16 +93,10 @@ TIME_ZONE = 'America/Bogota'
 USE_I18N = True
 USE_TZ = True
 
-# Configuración de archivos estáticos para Vercel
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else []
 
-# WhiteNoise configuration
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-# Media files - Usar Cloudinary en producción
-MEDIA_URL = '/media/'
+MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 CLOUDINARY_STORAGE = {
@@ -110,43 +105,49 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': os.getenv('CLOUDINARY_API_SECRET', ''),
 }
 
-# Usar Cloudinary en producción
 if CLOUDINARY_STORAGE['CLOUD_NAME']:
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS Configuration - Actualizar con tu dominio de frontend
+# Configuración CORS mejorada para Vercel
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
 
-# Agregar tu dominio de Vercel del frontend
-frontend_url = os.getenv('FRONTEND_URL', '')
-if frontend_url and frontend_url not in CORS_ALLOWED_ORIGINS:
-    CORS_ALLOWED_ORIGINS.append(frontend_url)
+# Agregar orígenes de Vercel desde variable de entorno
+vercel_url = os.getenv('VERCEL_URL', '')
+if vercel_url:
+    CORS_ALLOWED_ORIGINS.extend([
+        f"https://{vercel_url}",
+        f"http://{vercel_url}",
+    ])
+
+# Obtener URLs de frontend adicionales desde variable de entorno
+frontend_urls = os.getenv('FRONTEND_URLS', '')
+if frontend_urls:
+    CORS_ALLOWED_ORIGINS.extend(frontend_urls.split(','))
+
+# En producción, puedes usar CORS_ALLOWED_ORIGIN_REGEXES para patrones
+if not DEBUG:
+    CORS_ALLOWED_ORIGIN_REGEXES = [
+        r"^https://.*\.vercel\.app$",  # Permite todos los despliegues de Vercel
+        r"^https://.*\.now\.sh$",       # Dominio antiguo de Vercel
+    ]
 
 CORS_ALLOW_CREDENTIALS = True
-
-# Configuración de seguridad para producción
-if not DEBUG:
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    X_FRAME_OPTIONS = 'DENY'
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-
-# CSRF Settings para Vercel
-CSRF_TRUSTED_ORIGINS = [
-    'https://*.vercel.app',
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
 ]
-if frontend_url:
-    CSRF_TRUSTED_ORIGINS.append(frontend_url)
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -182,7 +183,6 @@ SIMPLE_JWT = {
     'TOKEN_TYPE_CLAIM': 'token_type',
 }
 
-# Gmail configuration
 GMAIL_CLIENT_ID = os.getenv('GMAIL_CLIENT_ID', '')
 GMAIL_CLIENT_SECRET = os.getenv('GMAIL_CLIENT_SECRET', '')
 GMAIL_REFRESH_TOKEN = os.getenv('GMAIL_REFRESH_TOKEN', '')
@@ -192,3 +192,15 @@ FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
 
 if DEBUG and not GMAIL_CLIENT_ID:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Configuraciones de seguridad para producción
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
