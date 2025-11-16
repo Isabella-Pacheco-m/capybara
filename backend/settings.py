@@ -11,23 +11,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-1&h=ltyipk*4%5^44f=l&secw96$n*@$jsaqx_xyaq+zt_3f!&')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-# Configuración mejorada para ALLOWED_HOSTS
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
-# Agregar dominios de Railway y Vercel
 if not DEBUG:
     ALLOWED_HOSTS.extend([
-        '.railway.app',  # Railway
-        '.vercel.app',   # Vercel
-        '.now.sh',       # Dominio antiguo de Vercel
+        '.railway.app',
+        '.vercel.app',
+        '.now.sh',
     ])
-    
-    # Si tienes un dominio personalizado, agrégalo aquí o en la variable de entorno
     custom_domain = os.getenv('CUSTOM_DOMAIN', '')
     if custom_domain:
         ALLOWED_HOSTS.append(custom_domain)
 
-# Railway deployment - permite todos los hosts en Railway
 if os.getenv('RAILWAY_ENVIRONMENT'):
     ALLOWED_HOSTS = ['*']
     DEBUG = False
@@ -81,12 +76,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-# Configuración de Base de Datos con Supabase
-# Usar DATABASE_URL si está disponible (producción), si no usar SQLite (desarrollo)
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 if DATABASE_URL:
-    # Configuración para Supabase/PostgreSQL
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
@@ -96,7 +88,6 @@ if DATABASE_URL:
         )
     }
 else:
-    # Fallback a SQLite para desarrollo local
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -133,33 +124,31 @@ if CLOUDINARY_STORAGE['CLOUD_NAME']:
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Configuración CORS mejorada para Vercel y Railway
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    FRONTEND_URL,
 ]
 
-# Agregar orígenes de Vercel desde variable de entorno
-vercel_url = os.getenv('VERCEL_URL', '')
-if vercel_url:
+if not DEBUG:
     CORS_ALLOWED_ORIGINS.extend([
-        f"https://{vercel_url}",
-        f"http://{vercel_url}",
+        "https://capybara-sepia.vercel.app",
     ])
 
-# Obtener URLs de frontend adicionales desde variable de entorno
-frontend_urls = os.getenv('FRONTEND_URLS', '')
-if frontend_urls:
-    CORS_ALLOWED_ORIGINS.extend(frontend_urls.split(','))
-
-# En producción, puedes usar CORS_ALLOWED_ORIGIN_REGEXES para patrones
-if not DEBUG:
-    CORS_ALLOWED_ORIGIN_REGEXES = [
-        r"^https://.*\.vercel\.app$",  # Permite todos los despliegues de Vercel
-        r"^https://.*\.now\.sh$",       # Dominio antiguo de Vercel
-    ]
-
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = False
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
@@ -211,19 +200,13 @@ GMAIL_CLIENT_SECRET = os.getenv('GMAIL_CLIENT_SECRET', '')
 GMAIL_REFRESH_TOKEN = os.getenv('GMAIL_REFRESH_TOKEN', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@netu.app')
 
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
-
 if DEBUG and not GMAIL_CLIENT_ID:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# Configuraciones de seguridad para producción
 if not DEBUG:
-    SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = False
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
