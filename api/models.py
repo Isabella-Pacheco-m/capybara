@@ -118,8 +118,14 @@ class Profile(models.Model):
             if not Profile.objects.filter(access_code=code).exists():
                 return code
     def get_available_slots(self):
-        # Retorna los slots disponibles del usuario
         return self.available_slots if self.available_slots else []
+    
+    @classmethod
+    def get_profile_by_email_and_code(cls, email, access_code):
+        try:
+            return cls.objects.filter(email=email, access_code=access_code).first()
+        except cls.DoesNotExist:
+            return None
 
 class NetworkingSlot(models.Model):
     STATUS_CHOICES = [

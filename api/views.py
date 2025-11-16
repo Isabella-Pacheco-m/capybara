@@ -192,12 +192,104 @@ class PublicEventDetailView(generics.RetrieveAPIView):
     def get_queryset(self):
         return Event.objects.filter(is_active=True)
 
+class PublicCheckExistingUserView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request, event_code):
+        email = request.data.get('email')
+        access_code = request.data.get('access_code')
+        
+        if not email or not access_code:
+            return Response(
+                {'error': 'Email y código de acceso requeridos'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        event = get_object_or_404(Event, event_code=event_code, is_active=True)
+        
+        existing_profile = Profile.get_profile_by_email_and_code(email, access_code)
+        
+        if not existing_profile:
+            return Response(
+                {'exists': False, 'message': 'No se encontró un perfil con estos datos'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        if Profile.objects.filter(event=event, email=email).exists():
+            return Response(
+                {'error': 'Ya estás registrado en este evento'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        return Response({
+            'exists': True,
+            'profile': {
+                'full_name': existing_profile.full_name,
+                'position': existing_profile.position,
+                'company_name': existing_profile.company_name,
+                'bio': existing_profile.bio,
+                'linkedin_url': existing_profile.linkedin_url,
+                'phone': existing_profile.phone,
+                'interests': existing_profile.interests,
+                'photo_url': request.build_absolute_uri(existing_profile.photo.url) if existing_profile.photo else None
+            }
+        }, status=status.HTTP_200_OK)
+
 class PublicProfileCreateView(APIView):
     permission_classes = [AllowAny]
+    
     def post(self, request, event_code):
         event = get_object_or_404(Event, event_code=event_code, is_active=True)
         data = request.data.copy()
         data['event'] = event.id
+        
+        use_existing = request.data.get('use_existing_profile', False)
+        
+        if use_existing:
+            email = data.get('email')
+            access_code = data.get('existing_access_code')
+            
+            if not email or not access_code:
+                return Response(
+                    {'error': 'Email y código de acceso requeridos'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            existing_profile = Profile.get_profile_by_email_and_code(email, access_code)
+            
+            if not existing_profile:
+                return Response(
+                    {'error': 'No se encontró un perfil con estos datos'}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            if Profile.objects.filter(event=event, email=email).exists():
+                return Response(
+                    {'error': 'Ya estás registrado en este evento'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            new_profile = Profile.objects.create(
+                event=event,
+                email=existing_profile.email,
+                full_name=existing_profile.full_name,
+                position=existing_profile.position,
+                company_name=existing_profile.company_name,
+                bio=existing_profile.bio,
+                linkedin_url=existing_profile.linkedin_url,
+                phone=existing_profile.phone,
+                interests=existing_profile.interests,
+                photo=existing_profile.photo
+            )
+            
+            try:
+                send_access_code_email(new_profile)
+            except Exception as e:
+                print(f"Error enviando email: {e}")
+            
+            serializer = ProfileSerializer(new_profile, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
         serializer = ProfileSerializer(data=data, context={'request': request})
         if serializer.is_valid():
             profile = serializer.save()
@@ -246,8 +338,6 @@ class PublicDirectoryView(APIView):
             'profiles': serializer.data
         }, status=status.HTTP_200_OK)
 
-# En tu views.py, actualiza el método patch de PublicProfileView:
-
 class PublicProfileView(APIView):
     permission_classes = [AllowAny]
     
@@ -264,46 +354,25 @@ class PublicProfileView(APIView):
             return Response({'error': 'Perfil no encontrado'}, status=status.HTTP_404_NOT_FOUND)
     
     def patch(self, request, event_code):
-        print("=" * 50)
-        print("🔍 PATCH Request received")
-        print(f"📝 Request data: {request.data}")
-        print(f"📋 Content-Type: {request.content_type}")
-        print("=" * 50)
-        
         event = get_object_or_404(Event, event_code=event_code, is_active=True)
         access_code = request.data.get('access_code')
         
         if not access_code:
-            print("❌ No access code provided")
             return Response({'error': 'Código de acceso requerido'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
             profile = Profile.objects.get(event=event, access_code=access_code)
-            print(f"✅ Profile found: {profile.full_name} (ID: {profile.id})")
-            print(f"📊 Current available_slots: {profile.available_slots}")
-            
-            # Si viene available_slots en el request, actualizarlo
-            if 'available_slots' in request.data:
-                print(f"📥 New available_slots received: {request.data.get('available_slots')}")
-            
             serializer = ProfileSerializer(profile, data=request.data, partial=True, context={'request': request})
             
             if serializer.is_valid():
                 updated_profile = serializer.save()
-                print(f"💾 Profile saved successfully")
-                print(f"✅ Updated available_slots: {updated_profile.available_slots}")
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
-                print(f"❌ Serializer errors: {serializer.errors}")
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 
         except Profile.DoesNotExist:
-            print("❌ Profile not found")
             return Response({'error': 'Perfil no encontrado'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            print(f"❌ Unexpected error: {str(e)}")
-            import traceback
-            traceback.print_exc()
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class NetworkingSlotRequestView(APIView):

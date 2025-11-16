@@ -67,7 +67,7 @@ export default function DashboardLayout({ children }) {
                 </svg>
               </button>
               <h1 className="text-xl font-bold text-gray-900">
-                Panel de Administración NetU
+                Panel de Administración Capybara
               </h1>
             </div>
             <div className="flex items-center space-x-4">
