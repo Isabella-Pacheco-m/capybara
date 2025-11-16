@@ -14,17 +14,23 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 # Configuración mejorada para ALLOWED_HOSTS
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
-# Agregar dominios de Vercel si están en producción
+# Agregar dominios de Railway y Vercel
 if not DEBUG:
     ALLOWED_HOSTS.extend([
-        '.vercel.app',  # Permite todos los subdominios de vercel.app
-        '.now.sh',      # Dominio antiguo de Vercel
+        '.railway.app',  # Railway
+        '.vercel.app',   # Vercel
+        '.now.sh',       # Dominio antiguo de Vercel
     ])
     
     # Si tienes un dominio personalizado, agrégalo aquí o en la variable de entorno
     custom_domain = os.getenv('CUSTOM_DOMAIN', '')
     if custom_domain:
         ALLOWED_HOSTS.append(custom_domain)
+
+# Railway deployment - permite todos los hosts en Railway
+if os.getenv('RAILWAY_ENVIRONMENT'):
+    ALLOWED_HOSTS = ['*']
+    DEBUG = False
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -127,7 +133,7 @@ if CLOUDINARY_STORAGE['CLOUD_NAME']:
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Configuración CORS mejorada para Vercel
+# Configuración CORS mejorada para Vercel y Railway
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
