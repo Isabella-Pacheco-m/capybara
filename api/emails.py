@@ -3,21 +3,44 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
+from google.auth.transport.requests import Request
 from django.conf import settings
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_gmail_service():
     """Create and return Gmail API service instance"""
-    creds = Credentials(
-        token=None,
-        refresh_token=settings.GMAIL_REFRESH_TOKEN,
-        token_uri='https://oauth2.googleapis.com/token',
-        client_id=settings.GMAIL_CLIENT_ID,
-        client_secret=settings.GMAIL_CLIENT_SECRET,
-        scopes=['https://www.googleapis.com/auth/gmail.send']
-    )
+    try:
+        # Verificar que las credenciales estén configuradas
+        if not all([
+            settings.GMAIL_REFRESH_TOKEN,
+            settings.GMAIL_CLIENT_ID,
+            settings.GMAIL_CLIENT_SECRET
+        ]):
+            raise ValueError("Gmail credentials not properly configured in settings")
+        
+        creds = Credentials(
+            token=None,
+            refresh_token=settings.GMAIL_REFRESH_TOKEN,
+            token_uri='https://oauth2.googleapis.com/token',
+            client_id=settings.GMAIL_CLIENT_ID,
+            client_secret=settings.GMAIL_CLIENT_SECRET,
+            scopes=['https://www.googleapis.com/auth/gmail.send']
+        )
+        
+        # Refrescar el token si es necesario
+        if not creds.valid:
+            if creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+        
+        service = build('gmail', 'v1', credentials=creds)
+        logger.info("Gmail service created successfully")
+        return service
     
-    service = build('gmail', 'v1', credentials=creds)
-    return service
+    except Exception as e:
+        logger.error(f"Error creating Gmail service: {e}")
+        raise
 
 def create_message(sender, to, subject, html_content, plain_content):
     """Create a message for an email"""
@@ -40,6 +63,8 @@ def create_message(sender, to, subject, html_content, plain_content):
 def send_email_via_gmail(to_email, subject, html_content, plain_content):
     """Send email using Gmail API"""
     try:
+        logger.info(f"Attempting to send email to {to_email}")
+        
         service = get_gmail_service()
         message = create_message(
             settings.DEFAULT_FROM_EMAIL,
@@ -54,10 +79,11 @@ def send_email_via_gmail(to_email, subject, html_content, plain_content):
             body=message
         ).execute()
         
-        print(f"Email sent successfully. Message ID: {sent_message['id']}")
+        logger.info(f"Email sent successfully to {to_email}. Message ID: {sent_message['id']}")
         return True
+    
     except Exception as e:
-        print(f"Error sending email via Gmail API: {e}")
+        logger.error(f"Error sending email to {to_email}: {str(e)}", exc_info=True)
         return False
 
 def send_access_code_email(profile):
@@ -136,7 +162,7 @@ def send_access_code_email(profile):
     Guarda este código en un lugar seguro.
     
     Saludos,
-    Equipo de NetU
+    Equipo de Capybara
     """
     
     return send_email_via_gmail(
