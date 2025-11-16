@@ -91,11 +91,22 @@ export default function NetworkingPanel({
       >
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-3xl font-bold">Networking</h2>
-          {pendingReceived.length > 0 && (
-            <div className="bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-xl">
-              <span className="text-sm font-bold">{pendingReceived.length} nueva{pendingReceived.length !== 1 ? 's' : ''}</span>
-            </div>
-          )}
+          <div className="flex items-center space-x-3">
+            {pendingReceived.length > 0 && (
+              <div className="bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-xl">
+                <span className="text-sm font-bold">{pendingReceived.length} nueva{pendingReceived.length !== 1 ? 's' : ''}</span>
+              </div>
+            )}
+            <button
+              onClick={() => document.querySelector('[data-close-networking]')?.click()}
+              className="backdrop-blur-sm p-2 rounded-xl transition-all"
+              title="Cerrar"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
         <p className="text-sm opacity-90">Gestiona tus conexiones del evento</p>
       </div>

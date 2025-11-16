@@ -346,13 +346,9 @@ export default function EventDirectory() {
               </div>
               
               <div className="flex items-stretch space-x-3 md:space-x-4">
-                <div className="flex-1 md:flex-none bg-white rounded-xl md:rounded-2xl px-6 md:px-8 py-3 md:py-4 shadow-lg flex flex-col justify-center items-center min-w-[100px]">
-                  <p className="text-gray-600 text-xs md:text-sm font-semibold">Participantes</p>
-                  <p className="text-2xl md:text-4xl font-bold" style={{ color: brandColors.primary }}>{profiles.length}</p>
-                </div>
                 <button
                   onClick={() => setShowAvailabilityPanel(!showAvailabilityPanel)}
-                  className="relative bg-white rounded-xl md:rounded-2xl hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center px-4 md:px-0 md:w-16 md:h-16"
+                  className="relative bg-white rounded-4xl hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center px-4 md:px-0 w-16 h-16"
                   title="Mi disponibilidad"
                 >
                   <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: brandColors.primary }}>
@@ -361,7 +357,7 @@ export default function EventDirectory() {
                 </button>
                 <button
                   onClick={() => setShowNetworkingPanel(!showNetworkingPanel)}
-                  className="relative bg-white rounded-xl md:rounded-2xl hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center px-4 md:px-0 md:w-16 md:h-16"
+                  className="relative bg-white rounded-4xl hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center px-4 md:px-0 w-16 h-16"
                   title="Solicitudes de networking"
                 >
                   <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: brandColors.primary }}>
@@ -412,7 +408,13 @@ export default function EventDirectory() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-10 md:py-12 relative z-10">
+          <div className="mb-6">
+            <p className="text-sm text-gray-500 font-medium">
+              {profiles.length} {profiles.length === 1 ? 'participante' : 'participantes'} en el directorio
+            </p>
+          </div>
+          
           {filteredProfiles.length === 0 ? (
             <div className="bg-white rounded-2xl md:rounded-3xl p-8 md:p-16 text-center shadow-lg">
               <div className="w-16 h-16 md:w-24 md:h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
@@ -473,6 +475,7 @@ export default function EventDirectory() {
             className="absolute inset-0 backdrop-blur-sm transition-all duration-300"
             style={{ backgroundColor: `${brandColors.primary}15` }}
             onClick={() => setShowNetworkingPanel(false)}
+            data-close-networking
           />
           <div className="absolute right-0 top-0 h-full w-full md:w-auto animate-slide-in-right">
             <NetworkingPanel

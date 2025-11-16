@@ -8,4 +8,5 @@ media/
 .DS_Store
 venv/
 env/
-.venv/
+.venv/gmail_credentials.txt
+generate_gmail_token.py
