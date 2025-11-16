@@ -248,7 +248,7 @@ export default function EventDirectory() {
               </div>
             </div>
 
-            <form onSubmit={handleVerifyCode} className="p-8 space-y-6">
+            <div onSubmit={handleVerifyCode} className="p-8 space-y-6">
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Acceder al Directorio</h2>
                 <p className="text-gray-600">Ingresa tu código de acceso personal</p>
@@ -271,6 +271,7 @@ export default function EventDirectory() {
               <button
                 type="submit"
                 disabled={verifying}
+                onClick={handleVerifyCode}
                 className="w-full text-white font-bold py-4 px-6 rounded-xl transition disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0"
                 style={{
                   background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)`
@@ -292,7 +293,7 @@ export default function EventDirectory() {
                   ¿No tienes código? <a href={`/register/${eventCode}`} className="font-semibold hover:underline transition" style={{ color: brandColors.primary }}>Regístrate aquí</a>
                 </p>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       </div>
@@ -328,47 +329,47 @@ export default function EventDirectory() {
             <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-white rounded-full"></div>
           </div>
 
-          <div className="max-w-7xl mx-auto px-8 py-10 relative z-10">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center space-x-6">
+          <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-10 relative z-10">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-0 mb-6 md:mb-8">
+              <div className="flex items-center space-x-4 md:space-x-6">
                 {companyLogo && (
                   <img 
                     src={companyLogo} 
                     alt={companyName}
-                    className="h-16 object-contain bg-white rounded-2xl px-6 py-3 shadow-lg"
+                    className="h-12 md:h-16 object-contain bg-white rounded-xl md:rounded-2xl px-4 md:px-6 py-2 md:py-3 shadow-lg flex-shrink-0"
                   />
                 )}
-                <div className="text-white">
-                  <h1 className="text-4xl font-bold mb-2">{event.name}</h1>
-                  <p className="text-xl opacity-90">{companyName}</p>
+                <div className="text-white min-w-0">
+                  <h1 className="text-2xl md:text-4xl font-bold mb-1 md:mb-2 truncate">{event.name}</h1>
+                  <p className="text-base md:text-xl opacity-90 truncate">{companyName}</p>
                 </div>
               </div>
               
-              <div className="flex items-center space-x-4">
-                <div className="text-right bg-white rounded-2xl px-8 py-4 shadow-lg">
-                  <p className="text-gray-600 text-sm mb-1 font-semibold">Participantes</p>
-                  <p className="text-4xl text-center font-bold" style={{ color: brandColors.primary }}>{profiles.length}</p>
+              <div className="flex items-stretch space-x-3 md:space-x-4">
+                <div className="flex-1 md:flex-none bg-white rounded-xl md:rounded-2xl px-6 md:px-8 py-3 md:py-4 shadow-lg flex flex-col justify-center items-center min-w-[100px]">
+                  <p className="text-gray-600 text-xs md:text-sm font-semibold">Participantes</p>
+                  <p className="text-2xl md:text-4xl font-bold" style={{ color: brandColors.primary }}>{profiles.length}</p>
                 </div>
                 <button
                   onClick={() => setShowAvailabilityPanel(!showAvailabilityPanel)}
-                  className="relative p-4 bg-white rounded-2xl hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg"
+                  className="relative bg-white rounded-xl md:rounded-2xl hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center px-4 md:px-0 md:w-16 md:h-16"
                   title="Mi disponibilidad"
                 >
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: brandColors.primary }}>
+                  <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: brandColors.primary }}>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </button>
                 <button
                   onClick={() => setShowNetworkingPanel(!showNetworkingPanel)}
-                  className="relative p-4 bg-white rounded-2xl hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg"
+                  className="relative bg-white rounded-xl md:rounded-2xl hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center px-4 md:px-0 md:w-16 md:h-16"
                   title="Solicitudes de networking"
                 >
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: brandColors.primary }}>
+                  <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: brandColors.primary }}>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
                   {pendingRequests > 0 && (
                     <span 
-                      className="absolute -top-2 -right-2 flex items-center justify-center w-7 h-7 text-xs font-bold text-white rounded-full shadow-lg"
+                      className="absolute -top-1 -right-1 md:-top-2 md:-right-2 flex items-center justify-center w-5 h-5 md:w-7 md:h-7 text-[10px] md:text-xs font-bold text-white rounded-full shadow-lg"
                       style={{ 
                         backgroundColor: brandColors.accent
                       }}
@@ -380,17 +381,17 @@ export default function EventDirectory() {
               </div>
             </div>
 
-            <div className="relative">
+            <div className="relative mt-4 md:mt-0">
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Buscar por nombre, empresa o cargo..."
-                className="w-full px-6 py-4 pl-14 bg-white bg-opacity-95 backdrop-blur-sm border-2 border-white border-opacity-50 rounded-2xl focus:ring-2 focus:border-transparent transition text-lg shadow-xl placeholder-gray-500"
+                className="w-full px-4 md:px-6 py-3 md:py-4 pl-11 md:pl-14 bg-white bg-opacity-95 backdrop-blur-sm border-2 border-white border-opacity-50 rounded-xl md:rounded-2xl focus:ring-2 focus:border-transparent transition text-base md:text-lg shadow-xl placeholder-gray-500"
                 style={{ '--tw-ring-color': 'white' }}
               />
               <svg 
-                className="absolute left-5 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400" 
+                className="absolute left-3 md:left-5 top-1/2 transform -translate-y-1/2 w-5 h-5 md:w-6 md:h-6 text-gray-400" 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
@@ -400,9 +401,9 @@ export default function EventDirectory() {
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm('')}
-                  className="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+                  className="absolute right-3 md:right-5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -411,18 +412,18 @@ export default function EventDirectory() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-8 py-8 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8 relative z-10">
           {filteredProfiles.length === 0 ? (
-            <div className="bg-white rounded-3xl p-16 text-center shadow-lg">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white rounded-2xl md:rounded-3xl p-8 md:p-16 text-center shadow-lg">
+              <div className="w-16 h-16 md:w-24 md:h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
+                <svg className="w-8 h-8 md:w-12 md:h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <p className="text-gray-600 text-lg">No se encontraron participantes</p>
+              <p className="text-gray-600 text-base md:text-lg">No se encontraron participantes</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 items-start">
               {filteredProfiles.map(profile => (
                 <ProfileCard
                   key={profile.id}
@@ -454,7 +455,7 @@ export default function EventDirectory() {
             style={{ backgroundColor: `${brandColors.primary}15` }}
             onClick={() => setShowAvailabilityPanel(false)}
           />
-          <div className="absolute right-0 top-0 h-full animate-slide-in-right">
+          <div className="absolute right-0 top-0 h-full w-full md:w-auto animate-slide-in-right">
             <MyAvailabilityPanel
               currentProfile={currentProfile}
               event={event}
@@ -473,7 +474,7 @@ export default function EventDirectory() {
             style={{ backgroundColor: `${brandColors.primary}15` }}
             onClick={() => setShowNetworkingPanel(false)}
           />
-          <div className="absolute right-0 top-0 h-full animate-slide-in-right">
+          <div className="absolute right-0 top-0 h-full w-full md:w-auto animate-slide-in-right">
             <NetworkingPanel
               currentProfile={currentProfile}
               eventCode={eventCode}
